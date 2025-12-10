@@ -77,7 +77,7 @@ export default async function handler(
           quantity: 1,
         },
       ],
-      success_url: `${baseUrl}/success?pillar=${pillar}&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `https://go.lloydgtm.com/login?purchased=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/ultimate-growth-architect?pillar=${pillar}`,
       customer_email: customerEmail,
       metadata: {
