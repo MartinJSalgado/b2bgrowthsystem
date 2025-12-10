@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "../components/ui/button";
 import { ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { submitToOnePath } from "../utils/onepath";
 
@@ -60,7 +60,9 @@ const categories = ["Foundation", "Architecture", "Build", "Release", "Improve",
 
 export default function Diagnostic() {
   const navigate = useNavigate();
-  const [stage, setStage] = useState<"intro" | "assessment" | "gate" | "results">("intro");
+  const [searchParams] = useSearchParams();
+  const autostart = searchParams.get('autostart') === 'true';
+  const [stage, setStage] = useState<"intro" | "assessment" | "gate" | "results">(autostart ? "assessment" : "intro");
   const [currentCategory, setCurrentCategory] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [email, setEmail] = useState("");
@@ -154,6 +156,119 @@ export default function Diagnostic() {
     return sorted.slice(0, 3).map(([cat, score]) => ({ category: cat, score }));
   };
 
+  const getPrimaryConstraint = () => {
+    const sorted = Object.entries(categoryScores).sort((a, b) => a[1] - b[1]);
+    return { category: sorted[0][0], score: sorted[0][1] };
+  };
+
+  const getEmotionalMirror = (category: string) => {
+    const mirrors: Record<string, { why: string; truth: string }> = {
+      "Foundation": {
+        why: "This explains why your messaging fluctuates…\nwhy your funnel requires force…\nwhy every tactic feels random…\nwhy results come in waves instead of flow.",
+        truth: "This is not a skill issue.\nThis is architectural misalignment."
+      },
+      "Architecture": {
+        why: "This explains why prospects fall through the cracks…\nwhy your sales process feels inconsistent…\nwhy campaigns don't connect to revenue…\nwhy you can't predict pipeline.",
+        truth: "This is not a marketing issue.\nThis is structural fragmentation."
+      },
+      "Build": {
+        why: "This explains why growth depends on individuals…\nwhy onboarding takes months…\nwhy campaigns feel like starting from scratch…\nwhy execution never matches the plan.",
+        truth: "This is not a people issue.\nThis is system absence."
+      },
+      "Release": {
+        why: "This explains why launches feel like gambling…\nwhy demand comes in unpredictable bursts…\nwhy channels underperform…\nwhy activation requires constant hustle.",
+        truth: "This is not a channel issue.\nThis is activation chaos."
+      },
+      "Improve": {
+        why: "This explains why you can't diagnose what's broken…\nwhy decisions feel like guesses…\nwhy you repeat the same mistakes…\nwhy optimization never happens.",
+        truth: "This is not a data issue.\nThis is measurement blindness."
+      },
+      "Compound": {
+        why: "This explains why every month starts at zero…\nwhy your content doesn't build equity…\nwhy competitors with less effort outpace you…\nwhy growth plateaus despite more input.",
+        truth: "This is not an effort issue.\nThis is leverage absence."
+      }
+    };
+    return mirrors[category] || { why: "", truth: "" };
+  };
+
+  const getMicroOffer = (category: string) => {
+    const offers: Record<string, { title: string; price: string; outcome: string; bullets: string[] }> = {
+      "Foundation": {
+        title: "Fix ICP Clarity Now",
+        price: "$7",
+        outcome: "Rebuild ICP clarity, segment personas, write POV, define value narrative, and test positioning",
+        bullets: [
+          "Clarify your exact ICP with psychographic + firmographic precision",
+          "Define your unique category POV",
+          "Build a value narrative that makes you memorable",
+          "Create your 10-second clarity line",
+          "No meetings. No calls. Pure clarity."
+        ]
+      },
+      "Architecture": {
+        title: "Fix Buyer Journey Flow",
+        price: "$7",
+        outcome: "Map your buyer journey, align demand pathways, and design stage-specific messaging",
+        bullets: [
+          "Document your complete buyer journey with clear stages",
+          "Map demand pathways across all channels",
+          "Align messaging to each journey stage",
+          "Define qualification criteria and scoring",
+          "No meetings. No calls. Pure clarity."
+        ]
+      },
+      "Build": {
+        title: "Fix Funnel Blueprint",
+        price: "$7",
+        outcome: "Document core workflows, systematize content production, and build repeatable processes",
+        bullets: [
+          "Document your core GTM workflows",
+          "Systematize content production process",
+          "Design conversion system logic",
+          "Map automation and integration needs",
+          "No meetings. No calls. Pure clarity."
+        ]
+      },
+      "Release": {
+        title: "Fix Demand Activation",
+        price: "$7",
+        outcome: "Build systematic activation process, create repeatable campaign frameworks, and coordinate channels",
+        bullets: [
+          "Design systematic launch and activation process",
+          "Create repeatable campaign frameworks",
+          "Tie distribution to narrative strategy",
+          "Coordinate inbound and outbound efforts",
+          "No meetings. No calls. Pure clarity."
+        ]
+      },
+      "Improve": {
+        title: "Fix KPI Flow",
+        price: "$7",
+        outcome: "Establish optimization loops, define decision-driving KPIs, and build attribution clarity",
+        bullets: [
+          "Set up weekly or bi-weekly optimization loops",
+          "Define KPIs that actually drive decisions",
+          "Map clean data flow from touch to close",
+          "Build working attribution system",
+          "No meetings. No calls. Pure clarity."
+        ]
+      },
+      "Compound": {
+        title: "Fix Compounding System",
+        price: "$7",
+        outcome: "Build owned media strategy, establish category POV, and create long-term demand assets",
+        bullets: [
+          "Build owned media asset strategy (not rented)",
+          "Establish your category POV and voice",
+          "Design thought leadership system",
+          "Create content that compounds over time",
+          "No meetings. No calls. Pure clarity."
+        ]
+      }
+    };
+    return offers[category] || offers["Foundation"];
+  };
+
   const getCategoryDescription = (category: string) => {
     const descriptions: Record<string, string> = {
       "Foundation": "Your market positioning, narrative, and ICP definition need strengthening. Without a solid foundation, everything else becomes harder.",
@@ -216,6 +331,9 @@ export default function Diagnostic() {
 
   const diagnosis = stage === "results" ? getDiagnosis() : null;
   const bottlenecks = stage === "results" ? getBottlenecks() : [];
+  const primaryConstraint = stage === "results" ? getPrimaryConstraint() : null;
+  const emotionalMirror = primaryConstraint ? getEmotionalMirror(primaryConstraint.category) : null;
+  const microOffer = primaryConstraint ? getMicroOffer(primaryConstraint.category) : null;
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -569,7 +687,7 @@ export default function Diagnostic() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.5 }}
-                  className="bg-black text-white rounded-xl p-6 md:p-12 mb-16"
+                  className="bg-black text-white rounded-xl p-6 md:p-12 mb-12"
                 >
                   <div className="mb-6">
                     <span className="inline-block bg-[#07C1D8] text-black px-4 py-2 rounded-full text-sm font-black mb-4">
@@ -600,6 +718,59 @@ export default function Diagnostic() {
                     </Button>
                   </div>
                 </motion.div>
+
+                {/* Quick Win Option - Micro-Offer */}
+                {primaryConstraint && microOffer && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.6 }}
+                    className="bg-gradient-to-br from-[#07C1D8]/10 to-[#07C1D8]/5 border-2 border-[#07C1D8]/30 rounded-xl p-6 md:p-10 mb-16"
+                  >
+                    <div className="text-center mb-8">
+                      <p className="text-sm font-black tracking-widest text-black/40 mb-2">NOT READY FOR FULL ARCHITECTURE?</p>
+                      <h3 className="text-3xl md:text-4xl font-black mb-4 text-black">
+                        Start with a Quick Win
+                      </h3>
+                      <p className="text-lg text-black/70 font-medium leading-relaxed">
+                        Fix your biggest constraint ({primaryConstraint.category}) in 10-15 minutes for {microOffer.price}
+                      </p>
+                    </div>
+
+                    <div className="bg-white border border-[#07C1D8]/30 rounded-xl p-6 md:p-8 max-w-3xl mx-auto">
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <p className="text-xs text-black/60 mb-1 font-bold tracking-wider">THE ULTIMATE GROWTH ARCHITECT</p>
+                          <h4 className="text-xl md:text-2xl font-black text-black">{microOffer.title}</h4>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-4xl font-black text-[#07C1D8]">{microOffer.price}</div>
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-3 mb-6">
+                        {microOffer.bullets.slice(0, 4).map((bullet, idx) => (
+                          <div key={idx} className="flex items-start gap-2">
+                            <CheckCircle2 size={16} className="text-[#07C1D8] flex-shrink-0 mt-1" />
+                            <p className="text-sm text-black/80 font-medium">{bullet}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <Button
+                        onClick={() => navigate(`/ultimate-growth-architect?pillar=${primaryConstraint.category.toLowerCase()}`)}
+                        className="w-full bg-[#07C1D8] text-white hover:bg-[#06a8bd] h-14 rounded-lg text-lg font-bold"
+                      >
+                        Get Quick Win — $7
+                        <ArrowRight size={20} className="ml-2" />
+                      </Button>
+
+                      <p className="text-center text-black/50 text-xs mt-4 font-medium">
+                        10-15 minutes · No meetings · Instant clarity
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
 
                 {/* Back to Home */}
                 <motion.div

@@ -43,7 +43,7 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.4 }}
         >
           <Button
-            onClick={() => navigate('/diagnostic')}
+            onClick={() => navigate('/diagnostic?autostart=true')}
             className="bg-[#07C1D8] text-white hover:bg-[#06a8bd] h-16 px-12 rounded-lg text-xl font-bold shadow-lg"
           >
             Start Diagnostic

@@ -4,6 +4,9 @@ import { lazy, Suspense } from 'react';
 // Lazy load all pages for optimal performance
 const Landing = lazy(() => import('./pages/Landing'));
 const Diagnostic = lazy(() => import('./pages/Diagnostic'));
+const MicroOffer = lazy(() => import('./pages/MicroOffer'));
+const UltimateGrowthArchitect = lazy(() => import('./pages/UltimateGrowthArchitect'));
+const Success = lazy(() => import('./pages/Success'));
 const ClarityLab = lazy(() => import('./pages/ClarityLab'));
 const SystemIntensive = lazy(() => import('./pages/SystemIntensive'));
 const ArchitectureRoadmap = lazy(() => import('./pages/ArchitectureRoadmap'));
@@ -28,6 +31,9 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/diagnostic" element={<Diagnostic />} />
+          <Route path="/micro-offer" element={<MicroOffer />} />
+          <Route path="/ultimate-growth-architect" element={<UltimateGrowthArchitect />} />
+          <Route path="/success" element={<Success />} />
           <Route path="/clarity-lab" element={<ClarityLab />} />
           <Route path="/system-intensive" element={<SystemIntensive />} />
           <Route path="/architecture-roadmap" element={<ArchitectureRoadmap />} />
