@@ -114,29 +114,32 @@ export default function Diagnostic() {
   };
 
   const handleSubmitEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      const { overallScore: calculatedScore } = calculateScores();
+      e.preventDefault();
+      if (email) {
+        const { overallScore: calculatedScore } = calculateScores();
 
-      const result = await submitToOnePath({
-        name: name,
-        email: email,
-        companyName: company,
-        customFields: {
-          diagnosticScore: calculatedScore,
-          diagnosticAnswers: JSON.stringify(answers),
-          diagnosticTimestamp: new Date().toISOString()
+        const result = await submitToOnePath({
+          name: name,
+          email: email,
+          companyName: company,
+          customFields: {
+            diagnosticScore: calculatedScore,
+            diagnosticAnswers: JSON.stringify(answers),
+            diagnosticTimestamp: new Date().toISOString()
+          }
+        }, 'growth-gap-diagnostic');
+
+        if (result.success) {
+          setStage("results");
+          sendDiagnosticPDF(); // ADD THIS LINE
+        } else {
+          alert('Note: Your diagnostic results are ready, but there was an issue saving your information. Please
+  contact us directly if you\'d like to discuss your results.');
+          setStage("results");
+          sendDiagnosticPDF(); // ADD THIS LINE
         }
-      }, 'growth-gap-diagnostic');
-
-      if (result.success) {
-        setStage("results");
-      } else {
-        alert('Note: Your diagnostic results are ready, but there was an issue saving your information. Please contact us directly if you\'d like to discuss your results.');
-        setStage("results");
       }
-    }
-  };
+    };
 
   const { categoryScores, overallScore } = stage === "results" ? calculateScores() : { categoryScores: {}, overallScore: 0 };
 
@@ -160,6 +163,36 @@ export default function Diagnostic() {
     const sorted = Object.entries(categoryScores).sort((a, b) => a[1] - b[1]);
     return { category: sorted[0][0], score: sorted[0][1] };
   };
+
+    const sendDiagnosticPDF = async () => {
+      const { categoryScores: scores, overallScore: score } = calculateScores();
+      const bottlenecks = getBottlenecks();
+      const primaryConstraint = getPrimaryConstraint();
+      const diagnosis = getDiagnosis();
+
+      try {
+        await fetch('/api/send-diagnostic-pdf', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            company,
+            overallScore: score,
+            categoryScores: scores,
+            bottlenecks,
+            primaryConstraint,
+            diagnosis
+          })
+        });
+        console.log('✅ Diagnostic PDF sent successfully');
+      } catch (error) {
+        console.error('Failed to send diagnostic PDF:', error);
+        // Don't block the user experience if email fails
+      }
+    };
 
   const getEmotionalMirror = (category: string) => {
     const mirrors: Record<string, { why: string; truth: string }> = {
