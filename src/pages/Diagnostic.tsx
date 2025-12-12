@@ -10,50 +10,51 @@ interface Question {
   id: string;
   text: string;
   category: string;
+  description?: string;
 }
 
 const questions: Question[] = [
   // Foundation (F)
-  { id: "f1", text: "Our positioning is clear, specific, and differentiated (not generic)", category: "Foundation" },
-  { id: "f2", text: "We have a compelling narrative that makes us memorable", category: "Foundation" },
-  { id: "f3", text: "Our ICP is narrowly defined with psychographic + firmographic clarity", category: "Foundation" },
-  { id: "f4", text: "We own a distinct category or point of view in our market", category: "Foundation" },
-  { id: "f5", text: "Our value proposition is instantly clear to our target buyer", category: "Foundation" },
+  { id: "f1", text: "Our positioning is clear, specific, and differentiated (not generic)", category: "Foundation", description: "Can you explain exactly who you serve and what makes you different in one sentence?" },
+  { id: "f2", text: "We have a compelling narrative that makes us memorable", category: "Foundation", description: "Do prospects remember your story, or does it sound like everyone else?" },
+  { id: "f3", text: "Our ICP is narrowly defined with psychographic + firmographic clarity", category: "Foundation", description: "Can you describe your ideal customer beyond just company size and industry?" },
+  { id: "f4", text: "We own a distinct category or point of view in our market", category: "Foundation", description: "Are you known for a specific perspective, or are you just another vendor?" },
+  { id: "f5", text: "Our value proposition is instantly clear to our target buyer", category: "Foundation", description: "Within 10 seconds, can your prospect understand the value you deliver?" },
 
   // Architecture (A)
-  { id: "a1", text: "We have a documented buyer journey with clear stages", category: "Architecture" },
-  { id: "a2", text: "Our demand pathways are mapped and integrated across channels", category: "Architecture" },
-  { id: "a3", text: "Our funnel and CRM are properly aligned and configured", category: "Architecture" },
-  { id: "a4", text: "We have clear lead qualification criteria and scoring", category: "Architecture" },
-  { id: "a5", text: "Our messaging is consistent across all touchpoints", category: "Architecture" },
+  { id: "a1", text: "We have a documented buyer journey with clear stages", category: "Architecture", description: "Do you know exactly what happens at each stage from awareness to customer?" },
+  { id: "a2", text: "Our demand pathways are mapped and integrated across channels", category: "Architecture", description: "Can you trace how prospects move between channels and touchpoints?" },
+  { id: "a3", text: "Our funnel and CRM are properly aligned and configured", category: "Architecture", description: "Does your tech stack match your actual sales process and buyer journey?" },
+  { id: "a4", text: "We have clear lead qualification criteria and scoring", category: "Architecture", description: "Can you instantly tell if a lead is worth pursuing based on objective criteria?" },
+  { id: "a5", text: "Our messaging is consistent across all touchpoints", category: "Architecture", description: "Does your brand voice and message stay consistent from ads to sales calls?" },
 
   // Build (B)
-  { id: "b1", text: "We have documented workflows for our core GTM processes", category: "Build" },
-  { id: "b2", text: "We have consistent content production across key channels", category: "Build" },
-  { id: "b3", text: "Our conversion system works systematically (not just hustle)", category: "Build" },
-  { id: "b4", text: "Our automation and tech stack are properly integrated", category: "Build" },
-  { id: "b5", text: "We can onboard new team members to our system easily", category: "Build" },
+  { id: "b1", text: "We have documented workflows for our core GTM processes", category: "Build", description: "Can someone new follow your processes without needing to ask questions?" },
+  { id: "b2", text: "We have consistent content production across key channels", category: "Build", description: "Is content creation systematic, or does it depend on individual heroics?" },
+  { id: "b3", text: "Our conversion system works systematically (not just hustle)", category: "Build", description: "Do conversions happen through process, or through sheer willpower?" },
+  { id: "b4", text: "Our automation and tech stack are properly integrated", category: "Build", description: "Do your tools work together seamlessly, or are they held together with duct tape?" },
+  { id: "b5", text: "We can onboard new team members to our system easily", category: "Build", description: "Can new hires be productive quickly, or does ramp time take months?" },
 
   // Release (R)
-  { id: "r1", text: "We have a systematic activation and launch process", category: "Release" },
-  { id: "r2", text: "Our demand generation runs on a predictable system", category: "Release" },
-  { id: "r3", text: "Content and distribution are tied to our narrative strategy", category: "Release" },
-  { id: "r4", text: "We have repeatable campaign frameworks we can deploy", category: "Release" },
-  { id: "r5", text: "Our outbound and inbound strategies are coordinated", category: "Release" },
+  { id: "r1", text: "We have a systematic activation and launch process", category: "Release", description: "Do launches follow a proven playbook, or is each one built from scratch?" },
+  { id: "r2", text: "Our demand generation runs on a predictable system", category: "Release", description: "Can you forecast pipeline creation, or is it unpredictable month-to-month?" },
+  { id: "r3", text: "Content and distribution are tied to our narrative strategy", category: "Release", description: "Does every piece of content reinforce your positioning and POV?" },
+  { id: "r4", text: "We have repeatable campaign frameworks we can deploy", category: "Release", description: "Can you quickly spin up new campaigns using proven templates?" },
+  { id: "r5", text: "Our outbound and inbound strategies are coordinated", category: "Release", description: "Do your outbound and inbound efforts work together, or operate in silos?" },
 
   // Improve (I)
-  { id: "i1", text: "We run weekly or bi-weekly optimization loops", category: "Improve" },
-  { id: "i2", text: "We have clear KPIs that actually drive decisions", category: "Improve" },
-  { id: "i3", text: "Our data flows cleanly from touch to close", category: "Improve" },
-  { id: "i4", text: "We have working attribution (we know what drives pipeline)", category: "Improve" },
-  { id: "i5", text: "We systematically test and iterate our approach", category: "Improve" },
+  { id: "i1", text: "We run weekly or bi-weekly optimization loops", category: "Improve", description: "Do you regularly review and improve your systems, or just react to problems?" },
+  { id: "i2", text: "We have clear KPIs that actually drive decisions", category: "Improve", description: "Are your metrics actionable, or just vanity numbers on a dashboard?" },
+  { id: "i3", text: "Our data flows cleanly from touch to close", category: "Improve", description: "Can you track a lead from first touch through to closed deal?" },
+  { id: "i4", text: "We have working attribution (we know what drives pipeline)", category: "Improve", description: "Can you confidently say which channels and campaigns generate revenue?" },
+  { id: "i5", text: "We systematically test and iterate our approach", category: "Improve", description: "Do you run structured experiments, or just try random tactics?" },
 
   // Compound (C)
-  { id: "c1", text: "We consistently build owned media assets (not just rented)", category: "Compound" },
-  { id: "c2", text: "We have a clear category POV that we're known for", category: "Compound" },
-  { id: "c3", text: "Our thought leadership creates long-term demand", category: "Compound" },
-  { id: "c4", text: "Our brand recognition is growing in our target market", category: "Compound" },
-  { id: "c5", text: "Our content and reputation compound over time", category: "Compound" },
+  { id: "c1", text: "We consistently build owned media assets (not just rented)", category: "Compound", description: "Are you building long-term equity, or paying rent on platforms you don't control?" },
+  { id: "c2", text: "We have a clear category POV that we're known for", category: "Compound", description: "When prospects think of your category, does your brand come to mind?" },
+  { id: "c3", text: "Our thought leadership creates long-term demand", category: "Compound", description: "Does your content continue generating leads months after publishing?" },
+  { id: "c4", text: "Our brand recognition is growing in our target market", category: "Compound", description: "Are more prospects finding you already familiar with your brand?" },
+  { id: "c5", text: "Our content and reputation compound over time", category: "Compound", description: "Does each piece of content make the next one more effective?" },
 ];
 
 const categories = ["Foundation", "Architecture", "Build", "Release", "Improve", "Compound"];
@@ -479,9 +480,14 @@ export default function Diagnostic() {
                       transition={{ duration: 0.4, delay: idx * 0.1 }}
                       className="bg-black/[0.02] border border-black/10 rounded-xl p-8"
                     >
-                      <p className="text-lg font-bold mb-6 text-black/90">
+                      <p className="text-lg font-bold mb-2 text-black/90">
                         {question.text}
                       </p>
+                      {question.description && (
+                        <p className="text-sm text-black/60 mb-6 italic">
+                          {question.description}
+                        </p>
+                      )}
 
                       <div className="space-y-4">
                         <input
