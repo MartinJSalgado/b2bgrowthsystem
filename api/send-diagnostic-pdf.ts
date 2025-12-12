@@ -29,8 +29,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log('📊 Score:', diagnosticData.overallScore);
 
     // Generate PDF
-    const pdfBuffer = generateDiagnosticPDF(diagnosticData);
-    console.log('✅ PDF generated successfully');
+    console.log('📄 Generating PDF...');
+    const pdfBuffer = await generateDiagnosticPDF(diagnosticData);
+    console.log('✅ PDF generated successfully, buffer size:', pdfBuffer.length, 'bytes');
 
     // Initialize Resend
     const resend = new Resend(process.env.RESEND_API_KEY);
