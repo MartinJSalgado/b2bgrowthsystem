@@ -170,7 +170,9 @@ export default function Diagnostic() {
       const diagnosis = getDiagnosis();
 
       try {
-        await fetch('/api/send-diagnostic-pdf', {
+        console.log('📧 Calling email API with data:', { email, name, company, score });
+
+        const response = await fetch('/api/send-diagnostic-pdf', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -186,9 +188,22 @@ export default function Diagnostic() {
             diagnosis
           })
         });
-        console.log('✅ Diagnostic PDF sent successfully');
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error('❌ Email API failed:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: data.error,
+            details: data.details
+          });
+          return;
+        }
+
+        console.log('✅ Diagnostic PDF sent successfully:', data);
       } catch (error) {
-        console.error('Failed to send diagnostic PDF:', error);
+        console.error('❌ Failed to send diagnostic PDF:', error);
         // Don't block the user experience if email fails
       }
     };
