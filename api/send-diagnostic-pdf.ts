@@ -16,8 +16,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // Check if Resend API key is configured
+    if (!process.env.RESEND_API_KEY) {
+      console.error('❌ RESEND_API_KEY is not configured');
+      return res.status(500).json({
+        error: 'Email service not configured',
+        details: 'RESEND_API_KEY environment variable is missing'
+      });
+    }
+
+    console.log('📧 Attempting to send diagnostic email to:', diagnosticData.email);
+    console.log('📊 Score:', diagnosticData.overallScore);
+
     // Generate PDF
     const pdfBuffer = generateDiagnosticPDF(diagnosticData);
+    console.log('✅ PDF generated successfully');
 
     // Initialize Resend
     const resend = new Resend(process.env.RESEND_API_KEY);
@@ -244,7 +257,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     `.trim();
 
     // Send email with PDF attachment
-    await resend.emails.send({
+    console.log('📨 Sending email via Resend...');
+    console.log('From: Lloyd | Growth Systems <lloyd@lloydgtm.com>');
+    console.log('To:', diagnosticData.email);
+
+    const result = await resend.emails.send({
       from: 'Lloyd | Growth Systems <lloyd@lloydgtm.com>',
       to: diagnosticData.email,
       subject: `Your Growth Diagnostic Results (Score: ${diagnosticData.overallScore}/100) 📊`,
@@ -257,18 +274,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ]
     });
 
-    console.log(`✅ Diagnostic PDF sent to: ${diagnosticData.email} (Score: ${diagnosticData.overallScore})`);
+    console.log(`✅ Diagnostic PDF sent successfully!`);
+    console.log('Email ID:', result.data?.id);
+    console.log('Recipient:', diagnosticData.email);
+    console.log('Score:', diagnosticData.overallScore);
 
     return res.status(200).json({
       success: true,
-      message: 'Diagnostic PDF sent successfully'
+      message: 'Diagnostic PDF sent successfully',
+      emailId: result.data?.id
     });
 
   } catch (error: any) {
-    console.error('Error sending diagnostic PDF:', error);
+    console.error('❌ Error sending diagnostic PDF:', error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+
+    // Log Resend-specific error details
+    if (error.response) {
+      console.error('Resend API response:', error.response);
+    }
+
     return res.status(500).json({
       error: 'Failed to send diagnostic PDF',
-      details: error.message
+      details: error.message,
+      errorName: error.name
     });
   }
 }
