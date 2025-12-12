@@ -154,6 +154,41 @@ async function createContact(data: ContactData, formSource: string) {
     }
   }
 
+  // First, try to find existing contact by email
+  const searchResponse = await fetch(`${API_BASE_URL}/contacts/search/duplicate?locationId=${LOCATION_ID}&email=${encodeURIComponent(data.email)}`, {
+    headers: {
+      'Authorization': `Bearer ${API_KEY}`,
+      'Version': '2021-07-28'
+    }
+  });
+
+  let contactId: string | null = null;
+
+  if (searchResponse.ok) {
+    const searchResult = await searchResponse.json();
+    if (searchResult.contact && searchResult.contact.id) {
+      contactId = searchResult.contact.id;
+      console.log(`Found existing contact: ${contactId}, updating...`);
+
+      // Update existing contact
+      const updateResponse = await fetch(`${API_BASE_URL}/contacts/${contactId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json',
+          'Version': '2021-07-28'
+        },
+        body: JSON.stringify(contactPayload)
+      });
+
+      if (updateResponse.ok) {
+        const updateResult = await updateResponse.json() as GoHighLevelContactResponse;
+        return updateResult.contact;
+      }
+    }
+  }
+
+  // If not found, create new contact
   const response = await fetch(`${API_BASE_URL}/contacts/`, {
     method: 'POST',
     headers: {
@@ -166,6 +201,7 @@ async function createContact(data: ContactData, formSource: string) {
 
   if (!response.ok) {
     const errorData = await response.json();
+    console.error('Contact creation error:', errorData);
     throw new Error(`Failed to create contact: ${response.statusText}`);
   }
 

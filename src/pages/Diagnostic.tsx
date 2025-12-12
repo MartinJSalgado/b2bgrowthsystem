@@ -130,13 +130,12 @@ export default function Diagnostic() {
           }
         }, 'growth-gap-diagnostic');
 
-        if (result.success) {
-          setStage("results");
-          sendDiagnosticPDF(); // ADD THIS LINE
-        } else {
-          alert('Note: Your diagnostic results are ready, but there was an issue saving your information. Please contact us directly if you\'d like to discuss your results.');
-          setStage("results");
-          sendDiagnosticPDF();
+        // Always show results and send email, regardless of OnePath submission status
+        setStage("results");
+        sendDiagnosticPDF();
+
+        if (!result.success) {
+          console.warn('OnePath submission failed, but continuing with diagnostic results');
         }
       }
     };
