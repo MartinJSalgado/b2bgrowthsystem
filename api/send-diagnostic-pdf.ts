@@ -270,7 +270,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       attachments: [
         {
           filename: `FABRIC-Diagnostic-${diagnosticData.name.replace(/\s+/g, '-')}.pdf`,
-          content: pdfBuffer,
+          content: pdfBuffer.toString('base64'),
         }
       ]
     });
