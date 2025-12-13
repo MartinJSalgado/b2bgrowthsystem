@@ -165,9 +165,60 @@ export default function Diagnostic() {
 
     const sendDiagnosticPDF = async () => {
       const { categoryScores: scores, overallScore: score } = calculateScores();
-      const bottlenecks = getBottlenecks();
-      const primaryConstraint = getPrimaryConstraint();
-      const diagnosis = getDiagnosis();
+
+      // Calculate bottlenecks and constraints using the freshly calculated scores
+      const getLocalBottlenecks = () => {
+        const sorted = Object.entries(scores).sort((a, b) => a[1] - b[1]);
+        return sorted.slice(0, 3).map(([cat, score]) => ({ category: cat, score }));
+      };
+
+      const getLocalPrimaryConstraint = () => {
+        const sorted = Object.entries(scores).sort((a, b) => a[1] - b[1]);
+        return sorted.length > 0 ? { category: sorted[0][0], score: sorted[0][1] } : { category: 'Unknown', score: 0 };
+      };
+
+      const bottlenecks = getLocalBottlenecks();
+      const primaryConstraint = getLocalPrimaryConstraint();
+
+      // Calculate diagnosis using the freshly calculated score
+      const getLocalDiagnosis = () => {
+        if (score < 45) {
+          return {
+            title: "Broken Foundation",
+            description: "Your growth system needs architectural clarity at the foundation level. The fastest path forward is removing the single biggest constraint blocking everything else.",
+            offer: "Architectural Clarity Lab",
+            price: "$3,000 - $7,500",
+            duration: "3-5 days",
+            nextStep: "clarity-lab",
+            ctaText: "Book Clarity Sprint",
+            ctaDescription: "Get clarity on your #1 constraint"
+          };
+        } else if (score < 70) {
+          return {
+            title: "Mid-System Misalignment",
+            description: "You have structural issues across multiple systems. You need multi-constraint clarity + architectural direction to align your growth engine.",
+            offer: "System Design Intensive",
+            price: "$7,500 - $15,000",
+            duration: "5-7 days",
+            nextStep: "system-intensive",
+            ctaText: "Purchase Sprint",
+            ctaDescription: "Fix multiple growth blockers"
+          };
+        } else {
+          return {
+            title: "Optimization Phase",
+            description: "Your growth architecture is solid. You're ready for systematic tuning and 10x scalability through structured compound growth.",
+            offer: "Complete Growth System",
+            price: "$15,000 - $30,000",
+            duration: "30-90 days",
+            nextStep: "complete-system",
+            ctaText: "Scale Your System",
+            ctaDescription: "Build systematic compound growth"
+          };
+        }
+      };
+
+      const diagnosis = getLocalDiagnosis();
 
       try {
         console.log('📧 Calling email API with data:', { email, name, company, score });
