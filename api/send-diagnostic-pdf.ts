@@ -1,6 +1,22 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Resend } from 'resend';
-import { generateDiagnosticPDF, DiagnosticData } from '../src/utils/pdf-generator';
+
+export interface DiagnosticData {
+  name: string;
+  email: string;
+  company: string;
+  overallScore: number;
+  categoryScores: Record<string, number>;
+  bottlenecks: Array<{ category: string; score: number }>;
+  primaryConstraint: { category: string; score: number };
+  diagnosis: {
+    title: string;
+    description: string;
+    offer: string;
+    price: string;
+    duration: string;
+  };
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
@@ -28,13 +44,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log('📧 Attempting to send diagnostic email to:', diagnosticData.email);
     console.log('📊 Score:', diagnosticData.overallScore);
 
-    // Generate PDF
-    console.log('📄 Generating PDF...');
-    const pdfBuffer = await generateDiagnosticPDF(diagnosticData);
-    console.log('✅ PDF generated successfully, buffer size:', pdfBuffer.length, 'bytes');
-
     // Initialize Resend
     const resend = new Resend(process.env.RESEND_API_KEY);
+
+    // Generate category breakdown HTML
+    const categories = ['Foundation', 'Architecture', 'Build', 'Release', 'Improve', 'Compound'];
+    const categoryLabels: Record<string, string> = {
+      'Foundation': 'F - Foundation',
+      'Architecture': 'A - Architecture',
+      'Build': 'B - Build',
+      'Release': 'R - Release',
+      'Improve': 'I - Improve',
+      'Compound': 'C - Compound'
+    };
+
+    const categoryBarsHTML = categories.map(cat => {
+      const score = diagnosticData.categoryScores[cat] || 0;
+      const color = score < 45 ? '#EF4444' : score < 70 ? '#FBBD24' : '#22C55E';
+      return `
+        <div style="margin: 16px 0;">
+          <div style="font-weight: 600; margin-bottom: 8px; color: #0f172a;">${categoryLabels[cat]}</div>
+          <div style="background: #e5e7eb; border-radius: 8px; height: 12px; overflow: hidden;">
+            <div style="background: ${color}; height: 100%; width: ${score}%; border-radius: 8px;"></div>
+          </div>
+          <div style="text-align: right; font-size: 14px; font-weight: 600; color: #475569; margin-top: 4px;">${score}%</div>
+        </div>
+      `;
+    }).join('');
 
     // Prepare email HTML
     const emailHTML = `
@@ -110,6 +146,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       font-size: 14px;
       line-height: 1.6;
     }
+    .bottleneck-box {
+      background: #fef2f2;
+      border: 2px solid #fecaca;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .bottleneck-item {
+      background: white;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 10px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .bottleneck-score {
+      font-size: 24px;
+      font-weight: bold;
+      color: #dc2626;
+    }
     .cta-button {
       display: inline-block;
       background: linear-gradient(135deg, #07C1D8 0%, #06a8bd 100%);
@@ -124,16 +181,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .cta-button:hover {
       opacity: 0.9;
     }
-    .attachment-notice {
-      background: #fef3c7;
-      border: 1px solid #fbbf24;
+    .roadmap-section {
+      background: #f8fafc;
       border-radius: 8px;
-      padding: 16px;
+      padding: 20px;
       margin: 20px 0;
     }
-    .attachment-icon {
-      font-size: 24px;
-      margin-right: 8px;
+    .roadmap-week {
+      margin: 16px 0;
+    }
+    .roadmap-week h4 {
+      color: #0f172a;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .roadmap-week ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .roadmap-week li {
+      margin: 6px 0;
+      color: #475569;
+      font-size: 14px;
     }
     .footer {
       background: #f8fafc;
@@ -155,28 +224,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       font-size: 22px;
       margin-top: 0;
     }
-    p {
-      margin: 12px 0;
-    }
-    .next-steps {
-      background: #f8fafc;
-      border-radius: 8px;
-      padding: 20px;
-      margin: 20px 0;
-    }
-    .next-steps h3 {
+    h3 {
       color: #0f172a;
-      font-size: 16px;
-      margin-top: 0;
+      font-size: 18px;
+      margin-top: 24px;
       margin-bottom: 12px;
     }
-    .next-steps ul {
-      margin: 0;
-      padding-left: 20px;
-    }
-    .next-steps li {
-      margin: 8px 0;
-      color: #475569;
+    p {
+      margin: 12px 0;
     }
   </style>
 </head>
@@ -190,7 +245,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     <div class="content">
       <h2>Hi ${diagnosticData.name},</h2>
 
-      <p>Thank you for completing the FABRIC™ Growth Diagnostic. Your results are ready.</p>
+      <p>Thank you for completing the FABRIC™ Growth Diagnostic. Here are your complete results.</p>
 
       <div class="score-box">
         <div class="score">${diagnosticData.overallScore}</div>
@@ -202,28 +257,81 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         <div class="diagnosis-text">${diagnosticData.diagnosis.description}</div>
       </div>
 
-      <div class="attachment-notice">
-        <strong><span class="attachment-icon">📄</span>Your Complete Analysis is Attached</strong>
-        <p style="margin: 8px 0 0 0; font-size: 14px;">
-          We've attached a detailed PDF with your full diagnostic breakdown,
-          top bottlenecks, and a custom 30-day roadmap to fix your growth system.
-        </p>
+      <h3>📊 Your FABRIC™ Category Breakdown</h3>
+      ${categoryBarsHTML}
+
+      <div class="bottleneck-box">
+        <h3 style="margin-top: 0; color: #991b1b;">🎯 Your Primary Constraint</h3>
+        <div class="bottleneck-item">
+          <div>
+            <div style="font-weight: 700; font-size: 16px; color: #0f172a;">${diagnosticData.primaryConstraint.category}</div>
+            <div style="font-size: 13px; color: #64748b; font-style: italic;">This is your #1 growth blocker. Fix this first.</div>
+          </div>
+          <div class="bottleneck-score">${diagnosticData.primaryConstraint.score}%</div>
+        </div>
+
+        <h3 style="margin-top: 20px; margin-bottom: 12px; color: #991b1b;">Top 3 Growth Bottlenecks</h3>
+        ${diagnosticData.bottlenecks.map((b, i) => `
+          <div class="bottleneck-item">
+            <div style="font-weight: 600; color: #0f172a;">${i + 1}. ${b.category}</div>
+            <div class="bottleneck-score">${b.score}%</div>
+          </div>
+        `).join('')}
       </div>
 
-      <div class="next-steps">
-        <h3>🎯 What's in Your PDF:</h3>
-        <ul>
-          <li><strong>Complete FABRIC™ breakdown</strong> - Scores across all 6 categories</li>
-          <li><strong>Your #1 constraint</strong> - The primary bottleneck holding you back</li>
-          <li><strong>Top 3 growth bottlenecks</strong> - Priority areas to address</li>
-          <li><strong>30-day roadmap</strong> - Week-by-week action plan</li>
-          <li><strong>Recommended next steps</strong> - How to fix this systematically</li>
-        </ul>
+      <div class="roadmap-section">
+        <h3 style="margin-top: 0;">🗓️ Your 30-Day Roadmap</h3>
+
+        <div class="roadmap-week">
+          <h4>Week 1: Diagnostic & Priority Setting</h4>
+          <ul>
+            <li>Deep dive into your ${diagnosticData.primaryConstraint.category} constraint</li>
+            <li>Map current state vs desired state</li>
+            <li>Identify quick wins and long-term fixes</li>
+            <li>Set measurable 30-day goals</li>
+          </ul>
+        </div>
+
+        <div class="roadmap-week">
+          <h4>Week 2: Foundation Work</h4>
+          <ul>
+            <li>Implement quick wins from week 1 analysis</li>
+            <li>Begin systematic work on ${diagnosticData.primaryConstraint.category}</li>
+            <li>Document processes and decisions</li>
+            <li>Measure baseline metrics</li>
+          </ul>
+        </div>
+
+        <div class="roadmap-week">
+          <h4>Week 3: Build & Test</h4>
+          <ul>
+            <li>Roll out initial improvements</li>
+            <li>Test and validate changes</li>
+            <li>Address secondary bottleneck: ${diagnosticData.bottlenecks[1]?.category || 'TBD'}</li>
+            <li>Gather feedback and iterate</li>
+          </ul>
+        </div>
+
+        <div class="roadmap-week">
+          <h4>Week 4: Optimize & Scale</h4>
+          <ul>
+            <li>Measure results vs baseline</li>
+            <li>Refine and optimize systems</li>
+            <li>Document wins and lessons learned</li>
+            <li>Plan next 30-day cycle</li>
+          </ul>
+        </div>
       </div>
 
-      <p><strong>Ready to fix your growth system?</strong></p>
-
-      <p>Based on your score, we recommend: <strong>${diagnosticData.diagnosis.offer}</strong></p>
+      <h3>💡 Recommended Next Step</h3>
+      <div style="background: #f0f9ff; border: 2px solid #07C1D8; border-radius: 8px; padding: 20px; margin: 16px 0;">
+        <div style="font-weight: 700; font-size: 18px; color: #0f172a; margin-bottom: 8px;">${diagnosticData.diagnosis.offer}</div>
+        <div style="color: #475569; margin-bottom: 8px;">${diagnosticData.diagnosis.description}</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+          <div style="color: #64748b; font-size: 14px;">Investment: <strong>${diagnosticData.diagnosis.price}</strong></div>
+          <div style="color: #64748b; font-size: 14px;">Timeline: <strong>${diagnosticData.diagnosis.duration}</strong></div>
+        </div>
+      </div>
 
       <div style="text-align: center; margin: 30px 0;">
         <a href="https://b2bgrowthsystem.com/diagnostic" class="cta-button">
@@ -257,7 +365,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 </html>
     `.trim();
 
-    // Send email with PDF attachment
+    // Send email with diagnostic results
     console.log('📨 Sending email via Resend...');
     console.log('From: Lloyd | Growth Systems <lloyd@lloydgtm.com>');
     console.log('To:', diagnosticData.email);
@@ -266,28 +374,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       from: 'Lloyd | Growth Systems <lloyd@lloydgtm.com>',
       to: diagnosticData.email,
       subject: `Your Growth Diagnostic Results (Score: ${diagnosticData.overallScore}/100) 📊`,
-      html: emailHTML,
-      attachments: [
-        {
-          filename: `FABRIC-Diagnostic-${diagnosticData.name.replace(/\s+/g, '-')}.pdf`,
-          content: pdfBuffer.toString('base64'),
-        }
-      ]
+      html: emailHTML
     });
 
-    console.log(`✅ Diagnostic PDF sent successfully!`);
+    console.log(`✅ Diagnostic email sent successfully!`);
     console.log('Email ID:', result.data?.id);
     console.log('Recipient:', diagnosticData.email);
     console.log('Score:', diagnosticData.overallScore);
 
     return res.status(200).json({
       success: true,
-      message: 'Diagnostic PDF sent successfully',
+      message: 'Diagnostic email sent successfully',
       emailId: result.data?.id
     });
 
   } catch (error: any) {
-    console.error('❌ Error sending diagnostic PDF:', error);
+    console.error('❌ Error sending diagnostic email:', error);
     console.error('Error name:', error.name);
     console.error('Error message:', error.message);
     console.error('Error stack:', error.stack);
@@ -298,7 +400,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     return res.status(500).json({
-      error: 'Failed to send diagnostic PDF',
+      error: 'Failed to send diagnostic email',
       details: error.message,
       errorName: error.name
     });

@@ -252,9 +252,9 @@ export default function Diagnostic() {
           return;
         }
 
-        console.log('✅ Diagnostic PDF sent successfully:', data);
+        console.log('✅ Diagnostic email sent successfully:', data);
       } catch (error) {
-        console.error('❌ Failed to send diagnostic PDF:', error);
+        console.error('❌ Failed to send diagnostic email:', error);
         // Don't block the user experience if email fails
       }
     };
@@ -721,16 +721,18 @@ export default function Diagnostic() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.6, delay: 0.2 }}
-                    className="bg-black/[0.02] border border-black/10 rounded-xl p-8"
+                    className="bg-black/[0.02] border border-black/10 rounded-xl p-4 sm:p-8 overflow-hidden"
                   >
-                    <h3 className="text-xl font-black mb-6 text-center">Category Breakdown</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <RadarChart data={radarData}>
-                        <PolarGrid stroke="#000" strokeOpacity={0.1} />
-                        <PolarAngleAxis dataKey="category" tick={{ fontSize: 12, fontWeight: 600 }} />
-                        <Radar dataKey="score" stroke="#07C1D8" fill="#07C1D8" fillOpacity={0.3} strokeWidth={2} />
-                      </RadarChart>
-                    </ResponsiveContainer>
+                    <h3 className="text-lg sm:text-xl font-black mb-4 sm:mb-6 text-center">Category Breakdown</h3>
+                    <div className="w-full -mx-2 sm:mx-0">
+                      <ResponsiveContainer width="100%" height={300}>
+                        <RadarChart data={radarData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                          <PolarGrid stroke="#000" strokeOpacity={0.1} />
+                          <PolarAngleAxis dataKey="category" tick={{ fontSize: window.innerWidth < 640 ? 9 : 12, fontWeight: 600 }} />
+                          <Radar dataKey="score" stroke="#07C1D8" fill="#07C1D8" fillOpacity={0.3} strokeWidth={2} />
+                        </RadarChart>
+                      </ResponsiveContainer>
+                    </div>
                   </motion.div>
 
                   {/* Bar Chart */}
@@ -738,14 +740,15 @@ export default function Diagnostic() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.6, delay: 0.3 }}
-                    className="bg-black/[0.02] border border-black/10 rounded-xl p-8"
+                    className="bg-black/[0.02] border border-black/10 rounded-xl p-4 sm:p-8 overflow-hidden"
                   >
-                    <h3 className="text-xl font-black mb-6 text-center">FABRIC Scores</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={barData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#000" strokeOpacity={0.1} />
-                        <XAxis dataKey="name" tick={{ fontSize: 14, fontWeight: 700 }} />
-                        <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
+                    <h3 className="text-lg sm:text-xl font-black mb-4 sm:mb-6 text-center">FABRIC Scores</h3>
+                    <div className="w-full -mx-2 sm:mx-0">
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={barData} margin={{ top: 5, right: 10, bottom: 5, left: -10 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#000" strokeOpacity={0.1} />
+                          <XAxis dataKey="name" tick={{ fontSize: window.innerWidth < 640 ? 10 : 14, fontWeight: 700 }} />
+                          <YAxis domain={[0, 100]} tick={{ fontSize: window.innerWidth < 640 ? 10 : 12 }} />
                         <Tooltip
                           content={({ active, payload }) => {
                             if (active && payload && payload[0]) {
